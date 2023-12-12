@@ -4,20 +4,25 @@ public class PlayerController : MonoBehaviour
 {
     public CharacterController cc;
     [SerializeField] private GameObject player;
-    [SerializeField] private Camera cam;
+    [SerializeField] private Camera FirstPersonCam;
+    [SerializeField] private Camera ThirdPersonCam;
     [SerializeField] private float Sensitivity;
     [SerializeField] public Rigidbody rb;
     [SerializeField] private float speed, walk, run, crouch;
 
-    private Vector3 crouchScale, normalScale;
+    private Vector3 crouchScale, normalScale, moveDirection;
 
     public bool isMoving, isCrouching, isRunning;
 
     public float JumpForce;
     private float X, Y;
+    private float gravity = 20.0f;
+
+    public Camera ChosenCam;
 
     private void Start()
     {
+        ChosenCam = FirstPersonCam;
         speed = walk;
         crouchScale = new Vector3(1, .75f, 1);
         normalScale = new Vector3(1, 1, 1);
@@ -29,8 +34,20 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
 
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            if(ChosenCam == FirstPersonCam)
+            {
+                ChosenCam = ThirdPersonCam;
+            }
+            else if (ChosenCam == ThirdPersonCam)
+            {
+                ChosenCam = FirstPersonCam;
+            }
+        }
+
         var mousePos = Input.mousePosition;
-        var wantedPos = Camera.main.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, mousePos.z));
+        var wantedPos = ChosenCam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, mousePos.z));
 
         player.transform.LookAt(wantedPos);
 
@@ -59,8 +76,18 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Debug.Log("runs");
-            rb.AddForce(0, JumpForce, 0, ForceMode.Impulse);
+            for (int i = 0; i < JumpForce; i++)
+            {
+                Debug.Log("runs many times");
+                cc.Move(new Vector3(0, JumpForce / JumpForce + i, 0));
+            }
         }
+        if (!cc.isGrounded)
+        {
+            
+        }
+           
+        
         if (Input.GetKey(KeyCode.LeftShift))
         {
             speed = run;
